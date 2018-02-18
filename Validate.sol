@@ -2,24 +2,28 @@ pragma solidity ^0.4.16;
 
 contract Validate{
 
-	function Validate(
-		
-		address creator,
-		State state,
-		uint amount; // In Wei.
-		
-	)
+    enum state { start, end, succeed, fail }
+    
+    uint private minAmount;
+     
+    address private creator;
+	uint private amount; // In Ether.
 	
+	function Validate (address creator, uint amount) public{
+	    this.creator = creator;
+	    this.amount = amount;
+	}
+
     modifier isAmountMinimum() {
         
-		require(msg.value > amount) ;
+		require(msg.value > minAmount) ;
         _;
 
     }
 
-    modifier inWeiMultipleOfPrice() {
+    modifier inEtherMultipleOfPrice() {
 
-		require(msg.value%weiAmount == 0) ;
+		require(msg.value % minAmount == 0) ;
         _;
     
 	}
@@ -33,13 +37,13 @@ contract Validate{
     
     modifier finish() {
         
-		require(state == State.End || state == State.Fail)
+		require(state == State.End || state == State.Fail);
 		_;
     }
 	
 	modifier isDeadLine() {
         
-		require(now >= deadline)
+		require(now >= deadline);
 		_;
     }
 }

@@ -1,6 +1,6 @@
 pragma solidity ^0.4.11;
 
-contract ERC223Interface {
+contract ERC223_Interface {
     uint public totalSupply;
     function balanceOf(address who) constant returns (uint);
     function transfer(address to, uint value);

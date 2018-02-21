@@ -50,4 +50,34 @@ contract Validate{
 		require(now >= deadline);
 		_;
     }
-}
+	
+	
+
+    modifier inState(State _state) {
+        require(state == _state) ;
+        _;
+    }
+
+     modifier isMinimum() {
+        require(msg.value > priceInWei) ;
+        _;
+    }
+
+    modifier inMultipleOfPrice() {
+        require(msg.value%priceInWei == 0) ;
+        _;
+    }
+
+    modifier isCreator() {
+        require(msg.sender == creator) ;
+        _;
+    }
+
+    
+    modifier atEndOfLifecycle() {
+        if(!((state == State.Failed || state == State.Successful) && completedAt + 1 hours < now)) {
+            revert();
+        }
+        _;
+    }
+	}

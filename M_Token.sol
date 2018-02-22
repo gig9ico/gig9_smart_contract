@@ -1,17 +1,18 @@
 pragma solidity ^0.4.11;
 
-import "./ERC223_Interface.sol";
-import "./ERC223ReceivingContract.sol";
+import "./I_ERC223.sol";
+import "./I_ERC223ReceivingContract.sol";
+import "./L_SafeMath.sol";
+import "./L_ReceiverInterface.sol";
 
-contract Token is ERC223Interface {
+contract Token is ERC223 {
 	
-	string public tokenName;
+	string  tokenName;
     string public tokenSymbol;
 	uint8 public tokenDecimals;
 	
-	adress admin;
+	address admin;
 	uint public totalSupply;
-	uint8 totalSupply = 0;
 	
     using SafeMath for uint;
 	
@@ -24,7 +25,7 @@ contract Token is ERC223Interface {
         return balances[_owner];
     }
 	
-	function Token(string _tokenName, string _tokenSymbol, uint8 _tokenDecimals, uint8 _totalSupply) public
+	function Token(string _tokenName, string _tokenSymbol, uint8 _tokenDecimals, uint8 _totalSupply) public {
 	
 		tokenName = _tokenName;
 		tokenSymbol = _tokenSymbol;
@@ -37,18 +38,12 @@ contract Token is ERC223Interface {
 		totalSupply = _totalSupply;	
 	}
 	
-	function freezeAccount(address target, bool freeze) onlyAdmin public {
-		frozenAccount[target] = freeze;
-		FrozenFund(target, freeze);
-	}
-	
-	
 	function transfer(address _to, uint _value, bytes _data, string _custom_fallback) public returns (bool success) {
       
 		if(isContract(_to)) {
 			if (balanceOf(msg.sender) < _value) revert();
-			balances[msg.sender] = safeSub(balanceOf(msg.sender), _value);
-			balances[_to] = safeAdd(balanceOf(_to), _value);
+			balances[msg.sender] = SafeMath.sub(balanceOf(msg.sender), _value);
+			balances[_to] = SafeMath.add(balanceOf(_to), _value);
 			assert(_to.call.value(0)(bytes4(keccak256(_custom_fallback)), msg.sender, _value, _data));
 			Transfer(msg.sender, _to, _value, _data);
 			return true;
@@ -96,8 +91,8 @@ contract Token is ERC223Interface {
 	
 		if (balanceOf(msg.sender) < _value) revert();
 		
-		balances[msg.sender] = safeSub(balanceOf(msg.sender), _value);
-		balances[_to] = safeAdd(balanceOf(_to), _value);
+		balances[msg.sender] = SafeMath.sub(balanceOf(msg.sender), _value);
+		balances[_to] = SafeMath.add(balanceOf(_to), _value);
 		
 		Transfer(msg.sender, _to, _value, _data);
 		
@@ -106,8 +101,8 @@ contract Token is ERC223Interface {
   
 	function transferToContract(address _to, uint _value, bytes _data) private returns (bool success) {
 		if (balanceOf(msg.sender) < _value) revert();
-		balances[msg.sender] = safeSub(balanceOf(msg.sender), _value);
-		balances[_to] = safeAdd(balanceOf(_to), _value);
+		balances[msg.sender] = SafeMath.sub(balanceOf(msg.sender), _value);
+		balances[_to] = SafeMath.add(balanceOf(_to), _value);
 		ContractReceiver receiver = ContractReceiver(_to);
 		receiver.tokenFallback(msg.sender, _value, _data);
 		Transfer(msg.sender, _to, _value, _data);

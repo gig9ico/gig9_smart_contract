@@ -1,10 +1,14 @@
 pragma solidity ^0.4.16;
 
+import "./M_Token.sol";
+
 contract Crowdsale {
 	
+	mapping(address => uint256) balanceOf;
+    address creator;
+
 	// Contract
 	Token token;
-	Validate vaildate;
 	
 	// Object
 	address public beneficiary;
@@ -23,12 +27,14 @@ contract Crowdsale {
 	bool crowdsaleClosed;
 	
 	enum State { start, end, succeed, fail }
+	State currentState;
+	
 	uint currentBlock;	
 	
 	// Supply information 
 	
-	uint totalSupply = 500000000			// 500,000,000;
-	uint totalIssued = 268000000			// 268,000,000;
+	uint totalSupply = 500000000;			// 500,000,000;
+	uint totalIssued = 268000000;			// 268,000,000;
 		
 	uint block0Ethereum = 3000;
 	uint block1Ethereum = 3000;
@@ -40,42 +46,42 @@ contract Crowdsale {
 	uint block7Ethereum = 2000;
 	uint block8Ethereum = 2000;
 		
-	uint token0@Ethereum = 11000;
-	uint token1@Ethereum = 10000;
-	uint token2@Ethereum =  9500;
-	uint token3@Ethereum =  9000;
-	uint token4@Ethereum =  8500;
-	uint token5@Ethereum =  8000;
-	uint token6@Ethereum =  7500;
-	uint token7@Ethereum =  7300;
-	uint token8@Ethereum =  7000;
+	uint token0Ethereum = 11000;
+	uint token1Ethereum = 10000;
+	uint token2Ethereum =  9500;
+	uint token3Ethereum =  9000;
+	uint token4Ethereum =  8500;
+	uint token5Ethereum =  8000;
+	uint token6Ethereum =  7500;
+	uint token7Ethereum =  7300;
+	uint token8Ethereum =  7000;
 	
-	uint block0Issued = 33000000 			// 33,000,000
-	uint block1Issued = 30000000 			// 30,000,000
-	uint block2Issued = 28500000 			// 28,500,000
-	uint block3Issued = 27000000 			// 27,000,000
-	uint block4Issued = 25500000 			// 25,500,000
-	uint block5Issued = 24000000 			// 24,000,000
-	uint block6Issued = 22500000 			// 22,500,000
-	uint block7Issued = 14600000 			// 14,600,000
-	uint block8Issued = 14000000 			// 14,000,000
+	uint block0Issued = 33000000; 			// 33,000,000
+	uint block1Issued = 30000000; 			// 30,000,000
+	uint block2Issued = 28500000; 			// 28,500,000
+	uint block3Issued = 27000000; 			// 27,000,000
+	uint block4Issued = 25500000; 			// 25,500,000
+	uint block5Issued = 24000000; 			// 24,000,000
+	uint block6Issued = 22500000; 			// 22,500,000
+	uint block7Issued = 14600000; 			// 14,600,000
+	uint block8Issued = 14000000; 			// 14,000,000
 		
-	uint teamIssued	= 45560000 				// 45,560,000
-	uint bountySchemeIssued = 3340000 		// 3,334,000
+	uint teamIssued	= 45560000; 				// 45,560,000
+	uint bountySchemeIssued = 3340000; 		// 3,334,000
 	
 	event Log(string message);
 	event Transfer(address to, uint amount);
 	event GoalReached();
 	
-    function Crowdsale (string _tokenName, string _tokenSymbol, uint8 _tokenDecimals,
+    function Crowdsale (string _tokenName, string _tokenSymbol, uint8 _tokenDecimals, uint _totalSupply,
 						uint _minimumPurchasedEtherAmount, uint _fundingGoal, 
-						address _beneficiary, uint _startDate， uint _endDate) public{
+						address _creator, address _beneficiary, uint _startDate, uint _endDate) public{
         
 		// Contract
-		token = new Token(_tokenName, string _tokenSymbol, _tokenDecimals);
-		validate = new Validate();
+		//token = new Token(_tokenName,  _tokenSymbol, _tokenDecimals, _totalSupply);
 		
 		// Object
+		creator = _creator;
 		beneficiary = _beneficiary;
         fundingGoal = _fundingGoal;
 		
@@ -85,27 +91,24 @@ contract Crowdsale {
 		// State
 		amountRaised = 0;
 		currentBlock = 0;
-		currentInt = 0;
 		fundingGoalReached = false;
 		crowdsaleClosed = false;
 		
-		currentState = State.Start;
+		currentState = State.start;
     }
 
-    function () public payable {
-	
-        require(!validate.isDeadLine);
+    function () public payable{
 	
 		uint amount = msg.value;
 	
-		if(amount > _minimumPurchasedEtherAmount){
+		if(msg.value > minimumPurchasedEtherAmount){
 			
 			amountRaised += amount;
 			// Need transfer feature.
 			Transfer(msg.sender, amount);
 			
 		} else {
-			Log("MinimumPurchaseAmountViolation. " + msg.sender + " " + amount);
+			//console.log("MinimumPurchaseAmountViolation. " + msg.sender + " " + amount);
 		}
     }
 
@@ -117,7 +120,7 @@ contract Crowdsale {
         }
     }
 
-    function safeWithdrawal() public afterDeadline {
+    function safeWithdrawal() public isDeadLine {
         
 		uint amount = balanceOf[msg.sender];
 
@@ -132,20 +135,15 @@ contract Crowdsale {
 		}
     }
 	
-	function removeContract() public isCreator() atEndOfLifecycle(){
+	function removeContract() public isCreator() finish(){
 		selfdestruct(msg.sender);		
 		Log("Contract is removed");
 	}
 		
 	// Validation code start here.
 
-    modifier isAmountMinimum() {
-		require(msg.value > minimumPurchasedEtherAmount) ;
-        _;
-    }
-
     modifier inEtherMultipleOfPrice() {
-		require(msg.value % minAmount == 0) ;
+		require(msg.value % minimumPurchasedEtherAmount == 0) ;
         _;
 	}
 
@@ -155,12 +153,12 @@ contract Crowdsale {
     }
     
     modifier finish() {
-		require(state == State.end || state == State.fail);
+		require(currentState == State.end || currentState == State.fail);
 		_;
     }
 	
 	modifier isDeadLine() {
-		require(now >= deadline);
+		require(now >= endDate);
 		_;
     }
 }

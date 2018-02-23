@@ -4,81 +4,81 @@ import "./M_Token.sol";
 
 contract Crowdsale {
 	
-	mapping(address => uint256) balanceOf;
-    address creator;
-
 	// Contract
-	Token token;
+	Token public token;
 	
 	// Object
-	address public beneficiary;
-	
+	mapping(address => uint256) public balanceOf;
+    address public creator;
+    address public beneficiary;
+    
 	// Value
 	uint public fundingGoal;
-	uint minimumPurchasedEtherAmount;
+	uint public minimumPurchasedAmount;
+	
+	uint milliEtherToWei = 1000000000000000;
+	uint etherToWei      = 1000000000000000000;
 	
 	// Date
 	uint public startDate;
 	uint public endDate;
 	
 	// State
-	uint public amountRaised;
-    bool fundingGoalReached; 
+	bool crowdsaleStarted;
 	bool crowdsaleClosed;
-	
+	bool fundingGoalReached; 
+    uint public amountRaised;
+    
 	enum State { start, end, succeed, fail }
 	State currentState;
 	
-	uint currentBlock;	
-	
-	// Supply information 
-	
-	uint totalSupply = 500000000;			// 500,000,000;
-	uint totalIssued = 268000000;			// 268,000,000;
-		
-	uint block0Ethereum = 3000;
-	uint block1Ethereum = 3000;
-	uint block2Ethereum = 3000;
-	uint block3Ethereum = 3000;
-	uint block4Ethereum = 3000;
-	uint block5Ethereum = 3000;
-	uint block6Ethereum = 3000;
-	uint block7Ethereum = 2000;
-	uint block8Ethereum = 2000;
-		
-	uint token0Ethereum = 11000;
-	uint token1Ethereum = 10000;
-	uint token2Ethereum =  9500;
-	uint token3Ethereum =  9000;
-	uint token4Ethereum =  8500;
-	uint token5Ethereum =  8000;
-	uint token6Ethereum =  7500;
-	uint token7Ethereum =  7300;
-	uint token8Ethereum =  7000;
-	
-	uint block0Issued = 33000000; 			// 33,000,000
-	uint block1Issued = 30000000; 			// 30,000,000
-	uint block2Issued = 28500000; 			// 28,500,000
-	uint block3Issued = 27000000; 			// 27,000,000
-	uint block4Issued = 25500000; 			// 25,500,000
-	uint block5Issued = 24000000; 			// 24,000,000
-	uint block6Issued = 22500000; 			// 22,500,000
-	uint block7Issued = 14600000; 			// 14,600,000
-	uint block8Issued = 14000000; 			// 14,000,000
-		
-	uint teamIssued	= 45560000; 				// 45,560,000
+	// Supply Information
+	uint totalSupply        = 268000000;		// 268,000,000;
+	uint totalReceived      = 25000000;
+    uint teamIssued	        = 45560000;		// 45,560,000
 	uint bountySchemeIssued = 3340000; 		// 3,334,000
 	
-	event Log(string message);
-	event Transfer(address to, uint amount);
+	uint block0 = 3000000;
+	uint block1 = 3000000;
+	uint block2 = 3000000;
+	uint block3 = 3000000;
+	uint block4 = 3000000;
+	uint block5 = 3000000;
+	uint block6 = 3000000;
+	uint block7 = 2000000;
+	uint block8 = 2000000;
+	
+	uint block0First = 0;
+	uint block1First = 3000000;
+	uint block2First = 6000000;
+	uint block3First = 9000000;
+	uint block4First = 12000000;
+	uint block5First = 15000000;
+	uint block6First = 18000000;
+	uint block7First = 21000000;
+	uint block8First = 23000000;
+	
+	uint block0Exchanged = 11000;
+	uint block1Exchanged = 10000;
+	uint block2Exchanged =  9500;
+	uint block3Exchanged =  9000;
+	uint block4Exchanged =  8500;
+	uint block5Exchanged =  8000;
+	uint block6Exchanged =  7500;
+	uint block7Exchanged =  7300;
+	uint block8Exchanged =  7000;
+	
+	event EtherTransfer(address from, uint amount);
+	event TokenTransfer(address to, uint amount);
+	event MinimumPurchasedEtherViolation(address to, uint amount);
 	event GoalReached();
 	
-    function Crowdsale (string _tokenName, string _tokenSymbol, uint8 _tokenDecimals, uint _totalSupply,
-						uint _minimumPurchasedEtherAmount, uint _fundingGoal, 
+    function Crowdsale (string _tokenName, string _tokenSymbol, uint8 _tokenDecimals, uint8 _totalSupply,
+						uint _minimumPurchasedAmount, uint _revenue, uint _fundingGoal, 
 						address _creator, address _beneficiary, uint _startDate, uint _endDate) public{
         
 		// Contract
-		//token = new Token(_tokenName,  _tokenSymbol, _tokenDecimals, _totalSupply);
+		token = new Token(_tokenName,  _tokenSymbol, _tokenDecimals, _totalSupply);
 		
 		// Object
 		creator = _creator;
@@ -86,11 +86,10 @@ contract Crowdsale {
         fundingGoal = _fundingGoal;
 		
 		// Value
-		minimumPurchasedEtherAmount = _minimumPurchasedEtherAmount;
+		minimumPurchasedAmount = _minimumPurchasedAmount;
 		
 		// State
 		amountRaised = 0;
-		currentBlock = 0;
 		fundingGoalReached = false;
 		crowdsaleClosed = false;
 		
@@ -99,19 +98,24 @@ contract Crowdsale {
 
     function () public payable{
 	
-		uint amount = msg.value;
+		uint amount = msg.value / milliEtherToWei;
 	
-		if(msg.value > minimumPurchasedEtherAmount){
-			
-			amountRaised += amount;
-			// Need transfer feature.
-			Transfer(msg.sender, amount);
-			
-		} else {
-			//console.log("MinimumPurchaseAmountViolation. " + msg.sender + " " + amount);
+	    uint tentativeAmountRaised = amount + amountRaised;
+	
+	    if(amount > minimumPurchasedAmount){
+	        
+	        if(tentativeAmountRaised >= block0First && tentativeAmountRaised < block1First){
+	            token.transfer(amount * block0Exchanged);
+                amountRaised =  amount + amountRaised;
+   	        }
+	        
+	    } else {
+			MinimumPurchasedEtherViolation(msg.sender, amount);
 		}
-    }
-
+ }
+    
+        
+    
     function checkGoalReached() public isDeadLine {
         
 		if (amountRaised >= fundingGoal){
@@ -136,14 +140,13 @@ contract Crowdsale {
     }
 	
 	function removeContract() public isCreator() finish(){
-		selfdestruct(msg.sender);		
-		Log("Contract is removed");
+		selfdestruct(msg.sender);	
 	}
 		
 	// Validation code start here.
 
     modifier inEtherMultipleOfPrice() {
-		require(msg.value % minimumPurchasedEtherAmount == 0) ;
+		require(msg.value % minimumPurchasedAmount == 0) ;
         _;
 	}
 

@@ -17,7 +17,6 @@ contract Token is ERC223 {
     using SafeMath for uint;
 	
 	mapping (address => uint256) public balances;
-	mapping (address => bool) public frozenAccount;
 	
 	event Transfer(address indexed from, address indexed to, uint value, bytes data);
 	
@@ -108,4 +107,20 @@ contract Token is ERC223 {
 		Transfer(msg.sender, _to, _value, _data);
 		return true;
 	}
+	
+  function name() public view returns (string _name){
+      return tokenName;
+  }
+  
+  function symbol() public view returns (string _symbol){
+      return tokenSymbol;
+  }
+  
+  function decimals() public view returns (uint8 _decimals){
+      return tokenDecimals;
+  }
+  
+  function totalSupply() public view returns (uint256 _supply){
+      return totalSupply;
+  }
 }

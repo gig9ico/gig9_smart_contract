@@ -11,7 +11,7 @@ contract Token is ERC223 {
     string public tokenSymbol;
 	uint8 public tokenDecimals;
 	
-	address admin;
+	address creator;
 	uint public totalSupply;
 	
     using SafeMath for uint;
@@ -32,8 +32,8 @@ contract Token is ERC223 {
 		
 		totalSupply = _totalSupply;
 		
-		admin = msg.sender;
-		balances[admin] = _totalSupply;
+		creator = msg.sender;
+		balances[creator] = _totalSupply;
 		totalSupply = _totalSupply;	
 	}
 	
@@ -108,24 +108,23 @@ contract Token is ERC223 {
 		return true;
 	}
 	
-    function safeWithdrawal() {
-        
-		uint amount = balances[msg.sender];
-
-		balances[msg.sender] = 0;
-
-		if (amount > 0) {
-		
-			if (msg.sender.send(amount)) {
-			} else {
-				balances[msg.sender] = amount;
-			}
-		}
+    function teamTransfer(uint amount) isCreator public{
+		balances[msg.sender] = SafeMath.sub(balances[msg.sender], amount);
+        transfer(msg.sender, amount);
     }
 	
-	function removeContract() public{
+	function burnToken() isCreator public{
+        balances[msg.sender] = 0;
+    }
+    
+	function removeContract() isCreator public{
 		selfdestruct(msg.sender);	
-	}
+    }
+    
+    modifier isCreator() {
+		require(msg.sender == creator) ;
+        _;		
+    }
 	
   function name() public view returns (string _name){
       return tokenName;

@@ -1,4 +1,4 @@
-pragma solidity ^0.4.9;
+pragma solidity ^0.4.16;
 
  /* New ERC23 contract interface */
  

@@ -1,4 +1,4 @@
-pragma solidity ^0.4.11;
+pragma solidity ^0.4.16;
 
 import "./I_ERC223.sol";
 import "./I_ERC223ReceivingContract.sol";
@@ -20,11 +20,11 @@ contract Token is ERC223 {
 	
 	event Transfer(address indexed from, address indexed to, uint value, bytes data);
 	
-    function balanceOf(address _owner) constant returns (uint balance) {
+    function balanceOf(address _owner) public constant returns (uint balance) {
         return balances[_owner];
     }
 	
-	function Token(string _tokenName, string _tokenSymbol, uint8 _tokenDecimals, uint8 _totalSupply) public {
+	function Token(string _tokenName, string _tokenSymbol, uint8 _tokenDecimals, uint _totalSupply) public {
 	
 		tokenName = _tokenName;
 		tokenSymbol = _tokenSymbol;
@@ -106,6 +106,25 @@ contract Token is ERC223 {
 		receiver.tokenFallback(msg.sender, _value, _data);
 		Transfer(msg.sender, _to, _value, _data);
 		return true;
+	}
+	
+    function safeWithdrawal() {
+        
+		uint amount = balances[msg.sender];
+
+		balances[msg.sender] = 0;
+
+		if (amount > 0) {
+		
+			if (msg.sender.send(amount)) {
+			} else {
+				balances[msg.sender] = amount;
+			}
+		}
+    }
+	
+	function removeContract() public{
+		selfdestruct(msg.sender);	
 	}
 	
   function name() public view returns (string _name){

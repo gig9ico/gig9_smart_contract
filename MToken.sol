@@ -1,9 +1,9 @@
 pragma solidity ^0.4.16;
 
-import "./I_ERC223.sol";
-import "./I_ERC223ReceivingContract.sol";
-import "./L_SafeMath.sol";
-import "./L_ReceiverInterface.sol";
+import "./IERC223.sol";
+import "./IERC223ReceivingContract.sol";
+import "./LSafeMath.sol";
+import "./LContractReceiver.sol";
 
 contract Token is ERC223 {
 	
@@ -120,12 +120,15 @@ contract Token is ERC223 {
 	function removeContract() isCreator public{
 		selfdestruct(msg.sender);	
     }
+
+  function getCreator() public view returns (address){
+      return creator;
+  }
     
     modifier isCreator() {
 		require(msg.sender == creator) ;
         _;		
     }
-	
   function name() public view returns (string _name){
       return tokenName;
   }

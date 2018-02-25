@@ -1,14 +1,11 @@
 pragma solidity ^0.4.16;
 
-import "./M_Token.sol";
+import "./MToken.sol";
 
-contract Crowdsale {
+contract CrowdSale {
 	
 	// Contract
 	Token public token;
-	
-	// Constant
-	address public creator;
     
 	// Date
 	uint public startDate;
@@ -88,11 +85,10 @@ contract Crowdsale {
 	 * parameters - for eg. "GIG9", "GIG", 8, "0xC7B38600299ab2657c6F341310DAdD9E1ba7398a", 1521072000, 1529020800
      */
         
-    function Crowdsale (string _tokenName, string _tokenSymbol, uint8 _tokenDecimals, 
+    function CrowdSale (string _tokenName, string _tokenSymbol, uint8 _tokenDecimals, 
 					    address _creator, uint _startDate, uint _endDate) public {
         
 		token = new Token(_tokenName,  _tokenSymbol, _tokenDecimals, totalSupply);
-		creator = _creator;
 		amountRaised = 0;
 		bountySchemeTokenTransferred = 0;
 		startDate = _startDate;
@@ -251,11 +247,11 @@ contract Crowdsale {
 	 */
 
     modifier isCreator() {
-		require(msg.sender == creator) ;
+		require(msg.sender == token.getCreator()) ;
         _;		
     }
     
-    modifier isSaleActive() {
+    modifier isSaleActive(){
 		require(currentState == State.start);
 		_;
     }

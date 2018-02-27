@@ -88,7 +88,7 @@ contract CrowdSale {
     function CrowdSale (string _tokenName, string _tokenSymbol, uint8 _tokenDecimals, 
 					    address _creator, uint _startDate, uint _endDate) public {
         
-		token = new Token(_tokenName,  _tokenSymbol, _tokenDecimals, totalSupply);
+		token = new Token(_tokenName,  _tokenSymbol, _tokenDecimals, _creator, totalSupply);
 		amountRaised = 0;
 		bountySchemeTokenTransferred = 0;
 		startDate = _startDate;

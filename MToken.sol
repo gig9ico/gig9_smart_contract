@@ -24,7 +24,7 @@ contract Token is ERC223 {
         return balances[_owner];
     }
 	
-	function Token(string _tokenName, string _tokenSymbol, uint8 _tokenDecimals, uint _totalSupply) public {
+	function Token(string _tokenName, string _tokenSymbol, uint8 _tokenDecimals, address _creator, uint _totalSupply) public {
 	
 		tokenName = _tokenName;
 		tokenSymbol = _tokenSymbol;
@@ -32,7 +32,7 @@ contract Token is ERC223 {
 		
 		totalSupply = _totalSupply;
 		
-		creator = msg.sender;
+		creator = _creator;
 		balances[creator] = _totalSupply;
 		totalSupply = _totalSupply;	
 	}

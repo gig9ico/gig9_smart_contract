@@ -4,7 +4,7 @@ import "./MToken.sol";
 
 contract CrowdSale {
 	
-	// Contract
+	// Contractr
 	Token public token;
     
 	// Date
@@ -85,10 +85,9 @@ contract CrowdSale {
 	 * parameters - for eg. "GIG9", "GIG", 8, "0xC7B38600299ab2657c6F341310DAdD9E1ba7398a", 1521072000, 1529020800
      */
         
-    function CrowdSale (string _tokenName, string _tokenSymbol, uint8 _tokenDecimals, 
-					    address _creator, uint _startDate, uint _endDate) public {
+    function CrowdSale (address _creator , uint _startDate, uint _endDate) public {
         
-		token = new Token(_tokenName,  _tokenSymbol, _tokenDecimals, _creator, totalSupply);
+		token = Token( _creator);
 		amountRaised = 0;
 		bountySchemeTokenTransferred = 0;
 		startDate = _startDate;
@@ -191,7 +190,7 @@ contract CrowdSale {
 	    } else {
 	        
 			MinimumPurchasedEtherViolation(msg.sender, amount);
-			revert();
+			//revert();
 		}
     }
     

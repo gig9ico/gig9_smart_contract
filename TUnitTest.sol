@@ -18,8 +18,6 @@ contract UnitTest {
         
         //* parameters - for eg. "GIG9", "GIG", 8, "0xC7B38600299ab2657c6F341310DAdD9E1ba7398a", 1521072000, 1529020800
         
-        _address1 = 0x449a46d0aE23612f059FA848702C2DF830F5ED4E;
-
         crowdSaleGetters = new CrowdSaleGetters("GIG9", "GIG", 8, 0x449a46d0aE23612f059FA848702C2DF830F5ED4E, 1521072000, 1529020800);
 
         // Send 1 ether to the crowdsale contract Address
@@ -31,7 +29,7 @@ contract UnitTest {
    
    function initialTesting() public{
        
-       Assert.equal(crowdSaleGetters.isCurrentStateStart(), true, "State should be = start");
+       //Assert.equal(crowdSaleGetters.isCurrentStateStart(), true, "State should be = start");
        
        token = crowdSaleGetters.getToken();
        Assert.equal(token.balanceOf(token.getCreator()), 268000000, "Balance of creator should be 268000000");
@@ -45,5 +43,13 @@ contract UnitTest {
     function getCreator() public view returns (address){
         return token.getCreator();
     }
+    
+   function transfer() public payable{
+       
+     //crowdSaleGetters.transfer();
+     0x449a46d0aE23612f059FA848702C2DF830F5ED4E.transfer(0.01 ether);
+    }
+    
+    event LOG(address sender, uint value);
     
 }

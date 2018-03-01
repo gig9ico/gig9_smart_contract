@@ -85,7 +85,8 @@ contract CrowdSale {
 	 * parameters - for eg. "GIG9", "GIG", 8, "0xC7B38600299ab2657c6F341310DAdD9E1ba7398a", 1521072000, 1529020800
      */
         
-    function CrowdSale (address _creator , uint _startDate, uint _endDate) public {
+    function CrowdSale (string _tokenName, string _tokenSymbol, uint8 _tokenDecimals, 
+					    address _creator, uint _startDate, uint _endDate) public {
         
 		token = Token( _creator);
 		amountRaised = 0;
@@ -100,16 +101,16 @@ contract CrowdSale {
      */
 
     function () public payable{
-	    //sellToken();
-    }
+	    sellToken();    }
     
     /**
      * Depending on different blocks, how many TOKENS are sold base on the ETHER quantitiy.
      */
     
-    /*
+    
     function sellToken() isSaleActive public payable{
-        
+    
+    /*    
         AmountRaised();
         
 		uint amount = msg.value / weiUnit * tokenUnit;
@@ -191,9 +192,9 @@ contract CrowdSale {
 	    } else {
 	        
 			MinimumPurchasedEtherViolation(msg.sender, amount);
-			//revert();
-		}
-    }*/
+			revert();
+		}*/
+    }
     
     function run() public {
         

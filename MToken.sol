@@ -23,22 +23,25 @@ contract Token is ERC223 {
     function balanceOf(address _owner) public constant returns (uint balance) {
         return balances[_owner];
     }
+    
+    /**
+	 * constructor
+	 * parameters - for eg. "GIG9", "GIG", 8, "0xC7B38600299ab2657c6F341310DAdD9E1ba7398a", 268000000
+     */
 
-	
-	function Token(string _tokenName, string _tokenSymbol, uint8 _tokenDecimals, uint _totalSupply) public {
+	function Token(string _tokenName, string _tokenSymbol, uint8 _tokenDecimals, address _creator, uint _totalSupply) public {
 	
 		tokenName = _tokenName;
 		tokenSymbol = _tokenSymbol;
 		tokenDecimals = _tokenDecimals;
 		
+		creator = _creator;
+		
 		totalSupply = _totalSupply;
 		
-		creator = msg.sender;
 		balances[creator] = _totalSupply;
 		totalSupply = _totalSupply;	
 	}
-
-
 	
 	function transfer(address _to, uint _value, bytes _data, string _custom_fallback) public returns (bool success) {
       
@@ -91,7 +94,7 @@ contract Token is ERC223 {
 
 	function transferToAddress(address _to, uint _value, bytes _data) private returns (bool success) {
 	
-		//if (balanceOf(msg.sender) < _value) revert();
+		if (balanceOf(msg.sender) < _value) revert();
 		
 		balances[msg.sender] = SafeMath.sub(balanceOf(msg.sender), _value);
 		balances[_to] = SafeMath.add(balanceOf(_to), _value);
@@ -102,7 +105,9 @@ contract Token is ERC223 {
 	}
   
 	function transferToContract(address _to, uint _value, bytes _data) private returns (bool success) {
-		//if (balanceOf(msg.sender) < _value) revert();
+		
+		if (balanceOf(msg.sender) < _value) revert();
+		
 		balances[msg.sender] = SafeMath.sub(balanceOf(msg.sender), _value);
 		balances[_to] = SafeMath.add(balanceOf(_to), _value);
 		ContractReceiver receiver = ContractReceiver(_to);

@@ -100,13 +100,14 @@ contract CrowdSale {
      */
 
     function () public payable{
-	    sellToken();
+	    //sellToken();
     }
     
     /**
      * Depending on different blocks, how many TOKENS are sold base on the ETHER quantitiy.
      */
     
+    /*
     function sellToken() isSaleActive public payable{
         
         AmountRaised();
@@ -192,7 +193,7 @@ contract CrowdSale {
 			MinimumPurchasedEtherViolation(msg.sender, amount);
 			//revert();
 		}
-    }
+    }*/
     
     function run() public {
         
@@ -268,5 +269,17 @@ contract CrowdSale {
     modifier isContractReadyToBeRemoved(){
         require(isTokenTransferredToTeam && isTokenBountySchemeFinishTransferred && isTokenAllBurned);
         _;
+    }
+    
+    function getToken() public view returns (Token){
+        return token;
+    }
+    
+    function getThisContractAddress() public view returns (address){
+        return this;
+    }
+    
+    function isCurrentStateStart()  public view returns(bool){
+        return currentState == State.start;
     }
 }

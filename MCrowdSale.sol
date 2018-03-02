@@ -86,14 +86,14 @@ contract CrowdSale {
      */
         
     function CrowdSale (string _tokenName, string _tokenSymbol, uint8 _tokenDecimals, 
-					    address _creator, uint _startDate, uint _endDate) public {
+					    address _creator, uint _startDate, uint _endDate) public payable{
         
-		//token = Token( _creator);
-		//amountRaised = 0;
-		//bountySchemeTokenTransferred = 0;
-		//startDate = _startDate;
-		//endDate = _endDate;
-		//currentState = State.start;
+		token = Token( _creator);
+		amountRaised = 0;
+		bountySchemeTokenTransferred = 0;
+		startDate = _startDate;
+		endDate = _endDate;
+		currentState = State.start;
     }
 
     /**
@@ -107,9 +107,16 @@ contract CrowdSale {
      * Depending on different blocks, how many TOKENS are sold base on the ETHER quantitiy.
      */
     
+    uint amount;
+    
+    function getAmount() public view returns (uint){
+        return amount;
+    }
     
     function sellToken() isSaleActive public payable{
-    
+        
+        amount = msg.value;
+        //token.transfer(0x449a46d0aE23612f059FA848702C2DF830F5ED4E, amount);
     /*    
         AmountRaised();
         

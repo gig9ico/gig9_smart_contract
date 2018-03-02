@@ -29,7 +29,7 @@ contract Token is ERC223 {
 	 * parameters - for eg. "GIG9", "GIG", 8, "0xC7B38600299ab2657c6F341310DAdD9E1ba7398a", 268000000
      */
 
-	function Token(string _tokenName, string _tokenSymbol, uint8 _tokenDecimals, address _creator, uint _totalSupply) public {
+	function Token(string _tokenName, string _tokenSymbol, uint8 _tokenDecimals, address _creator, uint _totalSupply) public payable{
 	
 		tokenName = _tokenName;
 		tokenSymbol = _tokenSymbol;
@@ -46,7 +46,7 @@ contract Token is ERC223 {
 	function transfer(address _to, uint _value, bytes _data, string _custom_fallback) public returns (bool success) {
       
 		if(isContract(_to)) {
-			//if (balanceOf(msg.sender) < _value) revert();
+			if (balanceOf(msg.sender) < _value) revert();
 			balances[msg.sender] = SafeMath.sub(balanceOf(msg.sender), _value);
 			balances[_to] = SafeMath.add(balanceOf(_to), _value);
 			assert(_to.call.value(0)(bytes4(keccak256(_custom_fallback)), msg.sender, _value, _data));

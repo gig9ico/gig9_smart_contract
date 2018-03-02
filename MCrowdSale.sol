@@ -82,18 +82,18 @@ contract CrowdSale {
 	
 	/**
 	 * constructor
-	 * parameters - for eg. "GIG9", "GIG", 8, "0xC7B38600299ab2657c6F341310DAdD9E1ba7398a", 1521072000, 1529020800
+	 * parameters - for eg. "GIG9", "GIG", 8, "0x264922de0247a5fc6074FCa69264E542d5B9EF0E", 1521072000, 1529020800
      */
         
     function CrowdSale (string _tokenName, string _tokenSymbol, uint8 _tokenDecimals, 
 					    address _creator, uint _startDate, uint _endDate) public {
         
-		token = Token( _creator);
-		amountRaised = 0;
-		bountySchemeTokenTransferred = 0;
-		startDate = _startDate;
-		endDate = _endDate;
-		currentState = State.start;
+		//token = Token( _creator);
+		//amountRaised = 0;
+		//bountySchemeTokenTransferred = 0;
+		//startDate = _startDate;
+		//endDate = _endDate;
+		//currentState = State.start;
     }
 
     /**

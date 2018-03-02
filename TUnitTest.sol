@@ -10,7 +10,7 @@ contract UnitTest {
     event Log(uint i);
     event Log(bytes b);
     
-    CrowdSaleGetters crowdSaleGetters;
+    CrowdSale crowdSale;
     address creator;
     Token token;
 
@@ -20,10 +20,10 @@ contract UnitTest {
         
         ////_address1 = 0x449a46d0aE23612f059FA848702C2DF830F5ED4E;
 
-        //crowdSaleGetters = new CrowdSaleGetters("GIG9", "GIG", 8, 0x449a46d0aE23612f059FA848702C2DF830F5ED4E, 1521072000, 1529020800);
+        crowdSale = new CrowdSale("GIG9", "GIG", 8, 0x264922de0247a5fc6074FCa69264E542d5B9EF0E, 1521072000, 1529020800);
 
         // Send 1 ether to the crowdsale contract Address
-        // _address1.transfer(1);
+         0x264922de0247a5fc6074FCa69264E542d5B9EF0E.send(0.1 ether);
 
         //Log(crowdsale.getCurrentState());
         

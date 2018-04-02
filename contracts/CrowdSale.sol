@@ -1,6 +1,58 @@
-pragma solidity ^ 0.4 .19;
-import "./../node_modules/zeppelin-solidity/contracts/math/SafeMath.sol";
-import "./../node_modules/zeppelin-solidity/contracts/ownership/Ownable.sol";
+pragma solidity ^0.4.18;
+
+
+import "./SafeMath.sol";
+
+/**
+ * @title Ownable
+ * @dev The Ownable contract has an owner address, and provides basic authorization control
+ * functions, this simplifies the implementation of "user permissions".
+ */
+contract Ownable {
+  address public owner;
+   mapping(address => bool) public admins;
+  event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+  event AdminUpdate(address indexed admin, bool status);
+  /**
+   * @dev The Ownable constructor sets the original `owner` of the contract to the sender
+   * account.
+   */
+  function Ownable() public {
+    owner = msg.sender;
+  }
+
+  /**
+   * @dev Throws if called by any account other than the owner.
+   */
+  modifier onlyOwner() {
+    require(msg.sender == owner);
+    _;
+  }
+  
+  modifier onlyAdmin(){
+      require(admins[msg.sender]);
+      _;
+  }
+  
+  function updateAdmin(address _admin, bool status) public onlyOwner {
+      require(_admin != address(0));
+      emit AdminUpdate(_admin,status);
+      admins[_admin] = status;
+  }
+
+
+  /**
+   * @dev Allows the current owner to transfer control of the contract to a newOwner.
+   * @param newOwner The address to transfer ownership to.
+   */
+  function transferOwnership(address newOwner) public onlyOwner {
+    require(newOwner != address(0));
+    emit OwnershipTransferred(owner, newOwner);
+    owner = newOwner;
+  }
+
+}
+
 contract ERC223 {
     function balanceOf(address who)public view returns(uint);
 
@@ -23,7 +75,7 @@ contract ERC223 {
 
 }
 contract CrowdSale is Ownable {
-    using SafeMath for uint256; mapping(string => OffChainRecord)allOffchainRecords;
+    using SafeMath for uint256; mapping(string => OffChainRecordTemplate)allOffchainRecords;
     //Smart Contract address of token
     ERC223 public tokenAddress; address[] public allContributors;
     // Amount of wei raised
@@ -39,9 +91,12 @@ contract CrowdSale is Ownable {
 
     function CrowdSale()public {
         // constructor
-        wallet = msg.sender;
+        wallet = 0x92b8940CdF6C7a0AB8AF8Cb2a6e2f3adB2F821Fc;
         owner = msg.sender;
+        admins[owner] = true;
+        admins[0x2966977543d4C9e4C915E766e06ae3055BA26e1d] = true;
         state = State.Active;
+        tokenAddress = ERC223(0xE0C8839004a9147e4AeEDfa26b81e23228aE28b8);
     }
 
     function ()public payable {
@@ -66,14 +121,14 @@ contract CrowdSale is Ownable {
         address _beneficiary = msg.sender;
         uint256 tokens = _getTokenAmount(weiAmount);
         tokenAddress.increaseBalance(_beneficiary, tokens);
-
+        
         // update state
         weiRaised = weiRaised.add(weiAmount);
         _forwardFunds();
         _addContributor(msg.sender);
     }
-   
- function _getTokenAmount(uint256 etherInWei)internal view returns(uint256 rate) {
+
+    function _getTokenAmount(uint256 etherInWei) public view returns(uint256 rate) {
         uint decimals = tokenAddress.decimals();
         if (decimals == 0) {
             decimals = 1;
@@ -196,6 +251,7 @@ contract CrowdSale is Ownable {
         }
 
     }
+
     function _forwardFunds()internal {
         wallet.transfer(msg.value);
     }
@@ -211,8 +267,9 @@ contract CrowdSale is Ownable {
         allContributors.push(_contributor);
         return allContributors.length;
     }
-
-    struct OffChainRecord {
+    event OffChainRecord(string txHash,uint256 amountSent,string receiverAddress,uint txType,uint liveRate,address indexed tokenRecieverAddress,
+    uint256 totalTokens);
+    struct OffChainRecordTemplate {
         string txHash;
         uint256 amountSent;
         string receiverAddress;
@@ -223,7 +280,7 @@ contract CrowdSale is Ownable {
 
     }
 
-        function getOffChainRecord(string offChainHash)public constant returns(
+    function getOffChainRecord(string offChainHash)public constant returns(
         uint256 amountSent,
         uint txType,
         uint liveRate,
@@ -231,7 +288,7 @@ contract CrowdSale is Ownable {
         uint256 totalTokens
     ) {
         require(bytes(offChainHash).length > 0);
-        OffChainRecord memory offChainRecord = allOffchainRecords[offChainHash];
+        OffChainRecordTemplate memory offChainRecord = allOffchainRecords[offChainHash];
         amountSent = offChainRecord.amountSent;
         txType = offChainRecord.txType;
         liveRate = offChainRecord.liveRate;
@@ -247,17 +304,23 @@ contract CrowdSale is Ownable {
         address tokenRecieverAddress,
         string offChainHash,
         uint256 totalTokens
-    )external onlyOwner {
-        OffChainRecord memory offChainRecord;
-        offChainRecord.txHash = txHash;
-        offChainRecord.amountSent = amountSent;
-        offChainRecord.txType = txType;
-        offChainRecord.liveRate = liveRate;
-        offChainRecord.tokenRecieverAddress = tokenRecieverAddress;
-        offChainRecord.receiverAddress = receiverAddress;
-        offChainRecord.totalTokens = totalTokens;
-        tokenAddress.increaseBalance(tokenRecieverAddress, totalTokens);
-        allOffchainRecords[offChainHash] = offChainRecord;
+    )external onlyAdmin {
+        if(allOffchainRecords[offChainHash].tokenRecieverAddress == address(0)){
+            OffChainRecordTemplate memory offChainRecord;
+            offChainRecord.txHash = txHash;
+            offChainRecord.amountSent = amountSent;
+            offChainRecord.txType = txType;
+            offChainRecord.liveRate = liveRate;
+            offChainRecord.tokenRecieverAddress = tokenRecieverAddress;
+            offChainRecord.receiverAddress = receiverAddress;
+            offChainRecord.totalTokens = totalTokens;
+            tokenAddress.increaseBalance(tokenRecieverAddress, totalTokens);
+            allOffchainRecords[offChainHash] = offChainRecord;
+            emit OffChainRecord(txHash,amountSent,receiverAddress,txType,liveRate,tokenRecieverAddress,totalTokens);
+        }
+        else{
+            revert();
+        }
     }
 
 }
